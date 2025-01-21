@@ -93,6 +93,11 @@ bool bmp180_online(void) {
   return true;
 }
 
+int8_t bmp180_soft_reset(void) {
+  uint8_t data_buffer[] = {BMP180_REG_SOFT_RST, BMP180_RST_VAL};
+  return i2c_write_bytes(BMP180_I2C_ADDRESS, data_buffer);
+}
+
 int8_t bmp180_get_calibration_ac1(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -287,6 +292,120 @@ int8_t bmp180_get_calibration_md(bmp180_dev *device) {
     return BMP180_STATUS_API_ERR;
   }
   device->cal_data.md = (int16_t)((val_h << 8) | val_l);
+
+  return BMP180_STATUS_SUCCESS;
+}
+
+int8_t bmp180_get_uncompensated_temperature(bmp180_dev *device,
+                                            bmp180_data *data) {
+  uint8_t val_l = 0x00;
+  uint8_t val_h = 0x00;
+
+  uint8_t data_buffer[] = {BMP180_REG_CTL, BMP180_UT_CMD};
+  if (i2c_write_bytes(BMP180_I2C_ADDRESS, data_buffer) !=
+      BMP180_STATUS_SUCCESS) {
+    return BMP180_STATUS_API_ERR;
+  }
+  delay_ms(5);
+
+  if (i2c_read_byte(BMP180_I2C_ADDRESS, BMP180_REG_DT_H, &val_h) != 0) {
+    return BMP180_STATUS_API_ERR;
+  }
+
+  if (i2c_read_byte(BMP180_I2C_ADDRESS, BMP180_REG_DT_L, &val_l) != 0) {
+    return BMP180_STATUS_API_ERR;
+  }
+
+  data->ut = (uint16_t)((val_h << 8) | val_l);
+
+  return BMP180_STATUS_SUCCESS;
+}
+
+int8_t bmp180_get_uncompensated_pressure(bmp180_dev *device,
+                                         bmp180_data *data) {
+  uint8_t val_h  = 0x00;
+  uint8_t val_l  = 0x00;
+  uint8_t val_xl = 0x00;
+
+  uint8_t data_buffer[] = {BMP180_REG_CTL, BMP180_UP_CMD};
+  if (i2c_write_bytes(BMP180_I2C_ADDRESS, data_buffer) !=
+      BMP180_STATUS_SUCCESS) {
+    return BMP180_STATUS_API_ERR;
+  }
+  delay_ms(5);
+
+  if (i2c_read_byte(BMP180_I2C_ADDRESS, BMP180_REG_DT_H, &val_h) != 0) {
+    return BMP180_STATUS_API_ERR;
+  }
+
+  if (i2c_read_byte(BMP180_I2C_ADDRESS, BMP180_REG_DT_L, &val_l) != 0) {
+    return BMP180_STATUS_API_ERR;
+  }
+
+  if (i2c_read_byte(BMP180_I2C_ADDRESS, BPM180_REG_DT_XL, &val_xl) != 0) {
+    return BMP180_STATUS_API_ERR;
+  }
+
+  data->up = (uint16_t)(((val_h << 16) | (val_l << 8) | val_xl) >> 8);
+
+  return BMP180_STATUS_SUCCESS;
+}
+
+int8_t bmp180_get_temperature(bmp180_dev *device, bmp180_data *data) {
+  int16_t x1, x2;
+
+  if (bmp180_get_uncompensated_temperature(device, data) !=
+      BMP180_STATUS_SUCCESS) {
+    return BMP180_STATUS_API_ERR;
+  }
+
+  x1 = ((data->ut - device->cal_data.ac6) * device->cal_data.ac5) / (1 << 15);
+  x2 = (device->cal_data.mc * (1 << 11)) / (x1 + device->cal_data.md);
+  device->cal_data.b5 = x1 + x2;
+  data->temp          = (float)(device->cal_data.b5 + 8) / 160;
+
+  return BMP180_STATUS_SUCCESS;
+}
+
+int8_t bmp180_get_pressure(bmp180_dev *device, bmp180_data *data) {
+  int16_t b3, b6, x1, x2, x3;
+  uint32_t b4, b7;
+  int32_t p = 0;
+
+  // Get the uncompensated pressure
+  if (bmp180_get_uncompensated_pressure(device, data) !=
+      BMP180_STATUS_SUCCESS) {
+    return BMP180_STATUS_API_ERR;
+  }
+
+  b6 = device->cal_data.b5 - 4000;
+
+  x1 = (device->cal_data.b2 * ((b6 * b6) / (1 << 12))) / (1 << 11);
+  x2 = (device->cal_data.ac2 * b6) / (1 << 11);
+  x3 = x1 + x2;
+
+  b3 = ((((device->cal_data.ac1) * 4 + x3)) + 2) / 4;
+
+  x1 = (device->cal_data.ac3 * b6) / (1 << 13);
+  x2 = (device->cal_data.b1 * ((b6 * b6) / (1 << 12))) / (1 << 16);
+  x3 = ((x1 + x2) + 2) / 4;
+
+  b4 = ((device->cal_data.ac4 * (uint32_t)(x3 + 32768))) / (1 << 15);
+  b7 = ((uint32_t)(data->up - b3) * (50000));
+
+  if (b7 < 0x80000000) {
+    p = (b7 << 1) / b4;
+  } else {
+    p = (b7 / b4) * 2;
+  }
+
+  x1 = (p * p) / (1 << 16);
+  x1 = (x1 * 3038) / (1 << 16);
+  x2 = (-7357 * p) / (1 << 16);
+  p += (x1 + x2 + 3791) / (1 << 4);
+
+  data->pressure_pa  = p;
+  data->pressure_atm = (float)(p / ATM_CONV_FACTOR);
 
   return BMP180_STATUS_SUCCESS;
 }

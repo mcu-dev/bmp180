@@ -28,6 +28,18 @@
 #include "utils/i2c.h"
 #include "utils/utils.h"
 
+/*******************************CONSTANTS**************************************/
+#define ATM_CONV_FACTOR 101325.0f
+
+/*******************************DATASET****************************************/
+typedef struct {
+  uint16_t ut;
+  uint16_t up;
+  int32_t pressure_pa;
+  float pressure_atm;
+  float temp;
+} bmp180_data;
+
 /*******************************STATUSES***************************************/
 typedef enum {
   BMP180_STATUS_SUCCESS   = 0,
@@ -40,32 +52,40 @@ typedef enum {
 
 #define BMP180_I2C_ADDRESS 0x77
 #define BMP180_DEV_ID      0x55
+#define BMP180_RST_VAL     0xB6
+#define BMP180_UT_CMD      0x2E
+#define BMP180_UP_CMD      0x34
 
 /*********************************REGISTERS************************************/
 
-#define BMP180_REG_AC1_H  0xAA
-#define BMP180_REG_AC1_L  0xAB
-#define BMP180_REG_AC2_H  0xAC
-#define BMP180_REG_AC2_L  0xAD
-#define BMP180_REG_AC3_H  0xAE
-#define BMP180_REG_AC3_L  0xAF
-#define BMP180_REG_AC4_H  0xB0
-#define BMP180_REG_AC4_L  0xB1
-#define BMP180_REG_AC5_H  0xB2
-#define BMP180_REG_AC5_L  0xB3
-#define BMP180_REG_AC6_H  0xB4
-#define BMP180_REG_AC6_L  0xB5
-#define BMP180_REG_B1_H   0xB6
-#define BMP180_REG_B1_L   0xB7
-#define BMP180_REG_B2_H   0xB8
-#define BMP180_REG_B2_L   0xB9
-#define BMP180_REG_MB_H   0xBA
-#define BMP180_REG_MB_L   0xBB
-#define BMP180_REG_MC_H   0xBC
-#define BMP180_REG_MC_L   0xBD
-#define BMP180_REG_MD_H   0xBE
-#define BMP180_REG_MD_L   0xBF
-#define BMP180_REG_DEV_ID 0xD0
+#define BMP180_REG_AC1_H    0xAA
+#define BMP180_REG_AC1_L    0xAB
+#define BMP180_REG_AC2_H    0xAC
+#define BMP180_REG_AC2_L    0xAD
+#define BMP180_REG_AC3_H    0xAE
+#define BMP180_REG_AC3_L    0xAF
+#define BMP180_REG_AC4_H    0xB0
+#define BMP180_REG_AC4_L    0xB1
+#define BMP180_REG_AC5_H    0xB2
+#define BMP180_REG_AC5_L    0xB3
+#define BMP180_REG_AC6_H    0xB4
+#define BMP180_REG_AC6_L    0xB5
+#define BMP180_REG_B1_H     0xB6
+#define BMP180_REG_B1_L     0xB7
+#define BMP180_REG_B2_H     0xB8
+#define BMP180_REG_B2_L     0xB9
+#define BMP180_REG_MB_H     0xBA
+#define BMP180_REG_MB_L     0xBB
+#define BMP180_REG_MC_H     0xBC
+#define BMP180_REG_MC_L     0xBD
+#define BMP180_REG_MD_H     0xBE
+#define BMP180_REG_MD_L     0xBF
+#define BMP180_REG_DEV_ID   0xD0
+#define BMP180_REG_SOFT_RST 0xE0
+#define BMP180_REG_CTL      0xF4
+#define BMP180_REG_DT_H     0xF6
+#define BMP180_REG_DT_L     0xF7
+#define BPM180_REG_DT_XL    0xF8
 
 /*********************************DESCRIPTORS**********************************/
 typedef enum {
@@ -87,6 +107,7 @@ typedef struct {
   int16_t mb;
   int16_t mc;
   int16_t md;
+  int16_t b5;
 } bmp180_calibration_data;
 
 /**********************************HANDLES*************************************/
@@ -112,6 +133,8 @@ int8_t bmp180_setup(bmp180_dev *device, bpm180_init_param init_param);
 
 bool bmp180_online(void);
 
+int8_t bmp180_soft_reset(void);
+
 int8_t bmp180_get_calibration_ac1(bmp180_dev *device);
 
 int8_t bmp180_get_calibration_ac2(bmp180_dev *device);
@@ -133,5 +156,14 @@ int8_t bmp180_get_calibration_mb(bmp180_dev *device);
 int8_t bmp180_get_calibration_mc(bmp180_dev *device);
 
 int8_t bmp180_get_calibration_md(bmp180_dev *device);
+
+int8_t bmp180_get_uncompensated_temperature(bmp180_dev *device,
+                                            bmp180_data *data);
+
+int8_t bmp180_get_uncompensated_pressure(bmp180_dev *device, bmp180_data *data);
+
+int8_t bmp180_get_temperature(bmp180_dev *device, bmp180_data *data);
+
+int8_t bmp180_get_pressure(bmp180_dev *device, bmp180_data *data);
 
 #endif /*BMP180_H*/
