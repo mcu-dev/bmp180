@@ -30,6 +30,9 @@
 
 /*******************************CONSTANTS**************************************/
 #define ATM_CONV_FACTOR 101325.0f
+#define BMP180_RST_VAL  0xB6
+#define BMP180_UT_CMD   0x2E
+#define BMP180_UP_CMD   0x34
 
 /*******************************DATASET****************************************/
 typedef struct {
@@ -52,9 +55,6 @@ typedef enum {
 
 #define BMP180_I2C_ADDRESS 0x77
 #define BMP180_DEV_ID      0x55
-#define BMP180_RST_VAL     0xB6
-#define BMP180_UT_CMD      0x2E
-#define BMP180_UP_CMD      0x34
 
 /*********************************REGISTERS************************************/
 
