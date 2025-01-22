@@ -4,5 +4,5 @@
 #include "unity.h"
 
 #include "bmp180.h"
-#include "mock_utils.h"
 #include "mock_i2c.h"
+#include "mock_utils.h"

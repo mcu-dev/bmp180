@@ -21,25 +21,24 @@
 #include "bmp180.h"
 
 /**
- * @brief Write a register value from the BMP180.
+ * @brief Write a register value to the BMP180.
  *
- * @param dev_addr The register address to write the value from.
+ * @param dev_addr The device address of the BMP180.
  * @param data_buffer Pointer to the buffer containing the data to be written.
  *
  * @return
  *   - 0 on success.
  *   - Non-zero error code on failure.
  */
-
 int8_t bmp180_write_register_value(uint8_t dev_addr, uint8_t *data_buffer) {
-  return i2c_write_bytes(dev_addr, data_buffer);
+  return i2c_write_byte(dev_addr, data_buffer);
 }
 
 /**
  * @brief Read a register value from the BMP180.
  *
- * @param address The register address to read the value from.
- * @param val Pointer to a variable to store the read register value.
+ * @param address The address of the register to be read.
+ * @param val Pointer to the variable to store the read value.
  *
  * @return
  *   - 0 on success.
@@ -53,6 +52,16 @@ int8_t bmp180_read_register_value(uint8_t address, uint8_t *val) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Initialize the BMP180 device with given parameters.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ * @param init_param Initialization parameters for BMP180 setup.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_setup(bmp180_dev *device, bpm180_init_param init_param) {
   int8_t ret = 0;
 
@@ -80,6 +89,13 @@ int8_t bmp180_setup(bmp180_dev *device, bpm180_init_param init_param) {
   return ret;
 }
 
+/**
+ * @brief Check if the BMP180 is online.
+ *
+ * @return
+ *   - true if the BMP180 is online.
+ *   - false if the BMP180 is offline.
+ */
 bool bmp180_online(void) {
   uint8_t val = 0x00;
 
@@ -93,11 +109,27 @@ bool bmp180_online(void) {
   return true;
 }
 
+/**
+ * @brief Perform a soft reset on the BMP180.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_soft_reset(void) {
   uint8_t data_buffer[] = {BMP180_REG_SOFT_RST, BMP180_RST_VAL};
-  return i2c_write_bytes(BMP180_I2C_ADDRESS, data_buffer);
+  return i2c_write_byte(BMP180_I2C_ADDRESS, data_buffer);
 }
 
+/**
+ * @brief Get calibration data AC1 from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_ac1(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -116,6 +148,15 @@ int8_t bmp180_get_calibration_ac1(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data AC2 from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_ac2(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -134,6 +175,15 @@ int8_t bmp180_get_calibration_ac2(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data AC3 from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_ac3(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -152,6 +202,15 @@ int8_t bmp180_get_calibration_ac3(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data AC4 from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_ac4(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -170,6 +229,15 @@ int8_t bmp180_get_calibration_ac4(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data AC5 from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_ac5(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -188,6 +256,15 @@ int8_t bmp180_get_calibration_ac5(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data AC6 from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_ac6(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -206,6 +283,15 @@ int8_t bmp180_get_calibration_ac6(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data B1 from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_b1(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -224,6 +310,15 @@ int8_t bmp180_get_calibration_b1(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data B2 from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_b2(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -242,6 +337,15 @@ int8_t bmp180_get_calibration_b2(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data MB from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_mb(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -260,6 +364,15 @@ int8_t bmp180_get_calibration_mb(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data MC from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_mc(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -278,6 +391,15 @@ int8_t bmp180_get_calibration_mc(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get calibration data MD from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_calibration_md(bmp180_dev *device) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
@@ -296,13 +418,23 @@ int8_t bmp180_get_calibration_md(bmp180_dev *device) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get the uncompensated temperature value from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ * @param data Pointer to the structure to store the uncompensated temperature.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_uncompensated_temperature(bmp180_dev *device,
                                             bmp180_data *data) {
   uint8_t val_l = 0x00;
   uint8_t val_h = 0x00;
 
   uint8_t data_buffer[] = {BMP180_REG_CTL, BMP180_UT_CMD};
-  if (i2c_write_bytes(BMP180_I2C_ADDRESS, data_buffer) !=
+  if (i2c_write_byte(BMP180_I2C_ADDRESS, data_buffer) !=
       BMP180_STATUS_SUCCESS) {
     return BMP180_STATUS_API_ERR;
   }
@@ -321,6 +453,16 @@ int8_t bmp180_get_uncompensated_temperature(bmp180_dev *device,
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get the uncompensated pressure value from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ * @param data Pointer to the structure to store the uncompensated pressure.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_uncompensated_pressure(bmp180_dev *device,
                                          bmp180_data *data) {
   uint8_t val_h  = 0x00;
@@ -328,7 +470,7 @@ int8_t bmp180_get_uncompensated_pressure(bmp180_dev *device,
   uint8_t val_xl = 0x00;
 
   uint8_t data_buffer[] = {BMP180_REG_CTL, BMP180_UP_CMD};
-  if (i2c_write_bytes(BMP180_I2C_ADDRESS, data_buffer) !=
+  if (i2c_write_byte(BMP180_I2C_ADDRESS, data_buffer) !=
       BMP180_STATUS_SUCCESS) {
     return BMP180_STATUS_API_ERR;
   }
@@ -351,6 +493,16 @@ int8_t bmp180_get_uncompensated_pressure(bmp180_dev *device,
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get the compensated temperature in Celsius from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ * @param data Pointer to the structure to store the temperature in Celsius.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_temperature(bmp180_dev *device, bmp180_data *data) {
   int16_t x1, x2;
 
@@ -367,6 +519,16 @@ int8_t bmp180_get_temperature(bmp180_dev *device, bmp180_data *data) {
   return BMP180_STATUS_SUCCESS;
 }
 
+/**
+ * @brief Get the compensated pressure value from the BMP180.
+ *
+ * @param device Pointer to the BMP180 device structure.
+ * @param data Pointer to the structure to store the pressure value.
+ *
+ * @return
+ *   - 0 on success.
+ *   - Non-zero error code on failure.
+ */
 int8_t bmp180_get_pressure(bmp180_dev *device, bmp180_data *data) {
   int16_t b3, b6, x1, x2, x3;
   uint32_t b4, b7;
